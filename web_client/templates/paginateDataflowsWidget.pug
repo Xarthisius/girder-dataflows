@@ -1,0 +1,13 @@
+.g-dataflow-list-header
+  .g-dataflow-pagination
+  button.g-dataflow-create-button.btn.btn-sm.btn-default
+    i.icon-plus-squared
+    |  Create dataflow
+
+.list-group.g-dataflow-list-container
+  each dataflow in dataflows
+    a.list-group-item.g-execute-dataflow-link(
+        href=dataflowUrlFunc && dataflowUrlFunc(dataflow),
+        data-dataflow-id=dataflow.id)
+      h4.list-group-item-heading.g-execute-dataflow-link-header= dataflow.name()
+      .list-group-item-text.g-execute-dataflow-link-body= dataflow.get('description')

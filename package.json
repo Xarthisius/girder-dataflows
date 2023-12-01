@@ -1,0 +1,15 @@
+{
+    "name": "girder-dataflows",
+    "version": "1.0.0",
+    "description": "Extend Girder with Dataflows.",
+    "keywords": [
+        "girder",
+        "dataflows",
+        "streaming"
+    ],
+    "license": "BSD-3",
+    "npm": {
+        "dependencies": {
+        }
+    }
+}

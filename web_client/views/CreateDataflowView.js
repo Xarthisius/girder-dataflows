@@ -1,0 +1,195 @@
+import $ from 'jquery';
+import _ from 'underscore';
+
+import router from 'girder/router';
+import FolderModel from 'girder/models/FolderModel';
+import MarkdownWidget from 'girder/views/widgets/MarkdownWidget';
+import BrowserWidget from 'girder/views/widgets/BrowserWidget';
+import View from 'girder/views/View';
+import { getCurrentUser } from 'girder/auth';
+
+import DataflowModel from '../models/DataflowModel';
+import SpecModel from '../models/SpecModel';
+import CreateDataflowViewTemplate from '../templates/createDataflowView.pug';
+// import ScriptAddWidget from '../widgets/ScriptAddWidget';
+import '../stylesheets/createDataflowView.styl';
+
+import 'girder/utilities/jquery/girderEnable';
+
+var lastParent = null;
+
+var CreateDataflowView = View.extend({
+    events: {
+        'submit #g-item-edit-form': function () {
+            this.$('.form-group').removeClass('has-error');
+            var scripts = [];
+            scripts.forEach.call(document.getElementsByClassName('g-script'), function (el) {
+                scripts.push(el.value);
+            });
+            var fields = {
+                name: this.$('#g-name').val(),
+                description: this.descriptionEditor.val(),
+                spec: {
+                    destinationId: this.$('#g-folder-data-id').attr('objId'),
+                    image: this.$('button.g-dataflow-frontend-select:first-child').val(),
+                    topic: this.$('#g-topic-name').val().trim()
+                }
+            };
+
+            if (this.dataflow) {
+                this.updateDataflow(fields);
+            } else {
+                this.createDataflow(fields);
+            }
+
+            this.descriptionEditor.saveText();
+            this.$('button.g-save-item').girderEnable(false);
+            this.$('.g-validation-failed-message').empty();
+            return false;
+        },
+        'click .g-open-browser': '_openBrowser',
+        'click a.g-frontend': function (e) {
+            var frontendName = $(e.currentTarget).text();
+            $('button.g-dataflow-frontend-select:first-child').text(frontendName);
+            $('button.g-dataflow-frontend-select:first-child').val(frontendName);
+        },
+        'click button.g-script-add-button': function (e) {
+            e.preventDefault();
+            this.addNewScript(e);
+        },
+        'click a.g-cancel-dataflow': function (e) {
+            router.navigate('/dataflows', {trigger: true});
+        }
+    },
+
+    initialize: function (settings) {
+        this.dataflow = settings.model || null;
+        this.initialValues = settings.initialValues || null;
+        this.descriptionEditor = new MarkdownWidget({
+            text: this.dataflow ? this.dataflow.get('description') : '',
+            prefix: 'item-description',
+            placeholder: 'Enter a description',
+            enableUploads: false,
+            parentView: this
+        });
+        this.dataSelector = new BrowserWidget({
+            parentView: this,
+            showItems: false,
+            selectItem: false,
+            root: lastParent || getCurrentUser(),
+            titleText: this.initialValues ? this.initialValues.data : 'Select a folder with data',
+            helpText: 'Browse to a directory to select it, then click "Save"',
+            showPreview: false,
+            input: this.initialValues ? {default: this.initialValues.data} : false,
+            validate: _.noop
+        });
+
+        if (this.dataflow) {
+            const spec = this.dataflow.attributes.spec;
+            if (spec.image) {
+                this.initialValues.image = spec.image;
+            }
+            if (spec.topic) {
+                this.initialValues.topic = spec.topic;
+            }
+            if (spec.destinationId) {
+                const destinationFolder = new FolderModel({_id: spec.destinationId});
+                destinationFolder.fetch().done(() => {
+                    lastParent = destinationFolder.parentId;
+                    this.dataSelector.root = destinationFolder;
+                    this.$('#g-folder-data-id').val(destinationFolder.get('name'));
+                    this.$('#g-folder-data-id').attr('objId', destinationFolder.id);
+                });
+            }
+        }
+
+        this.listenTo(this.dataSelector, 'g:saved', function (val) {
+            this.$('#g-folder-data-id').val(val.attributes.name);
+            this.$('#g-folder-data-id').attr('objId', val.id);
+        });
+
+        this.render();
+    },
+
+    addNewScript: function (event) {
+        var newRow = $('<div>').attr({
+            class: 'g-script-row'
+        }).appendTo(this.$el.find('.g-scripts-container'));
+
+        /* new ScriptAddWidget({
+            el: newRow,
+            item: this.item,
+            parentView: this
+        }).render(); */
+
+        if (_.isString(event)) {
+            newRow[0].children[0].children[0].value = event; // Ugly isn't it?
+        }
+    },
+
+    render: function () {
+        this.$el.html(CreateDataflowViewTemplate({
+            item: this.dataflow,
+            frontends: []
+        }));
+        this.descriptionEditor.setElement(this.$('.g-description-editor-container')).render();
+
+        if (this.dataflow) {
+            this.$('#g-name').val(this.dataflow.attributes.name);
+        }
+        if (this.initialValues) {
+            $('button.g-dataflow-frontend-select:first-child').text(this.initialValues.image);
+            $('button.g-dataflow-frontend-select:first-child').val(this.initialValues.image);
+            this.$('#g-topic-name').val(this.initialValues.topic);
+            this.$('#g-folder-data-id').val(this.initialValues.destinationId);
+        }
+
+        return this;
+    },
+
+    _openBrowser: function () {
+        this.dataSelector.setElement($('#g-dialog-container')).render();
+    },
+
+    createDataflow: function (fields) {
+        fields.spec = JSON.stringify(fields.spec);
+        var dataflow = new DataflowModel();
+        dataflow.set(_.extend(fields, {}));
+        dataflow.on('g:saved', function () {
+            this.trigger('g:saved', dataflow);
+            router.navigate('/dataflows', {trigger: true});
+        }, this).on('g:error', function (err) {
+            this.$('.g-validation-failed-message').text(err.responseJSON.message);
+            this.$('button.g-save-item').girderEnable(true);
+            this.$('#g-' + err.responseJSON.field).focus();
+        }, this).save();
+    },
+
+    updateDataflow: function (fields) {
+        if (fields.spec !== this.dataflow.attributes.spec) {
+            // If the spec changed, we need to update the spec
+            const spec = new SpecModel({dataflowId: this.model.id, data: JSON.stringify(fields.spec)});
+            console.log(spec);
+            spec.on('g:saved', function () {
+                console.log('Spec saved');
+            }, this).on('g:error', function (err) {
+                this.dataflow.trigger('g:error', err);
+            }, this).save();
+        }
+
+        this.dataflow.set('name', fields.name);
+        this.dataflow.set('description', fields.description);
+
+        this.dataflow.off().on('g:saved', function () {
+            this.$el.modal('hide');
+            this.trigger('g:saved', this.dataflow);
+            router.navigate(`/dataflow/${this.dataflow.id}`, {trigger: true});
+        }, this).on('g:error', function (err) {
+            this.$('.g-validation-failed-message').text(err.responseJSON.message);
+            this.$('button.g-save-item').girderEnable(true);
+            this.$('#g-' + err.responseJSON.field).focus();
+        }, this).save();
+    }
+});
+
+export default CreateDataflowView;

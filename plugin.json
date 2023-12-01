@@ -1,0 +1,8 @@
+{
+    "name": "Dataflows",
+    "description": "Plugin adding support for OpenMSIStream and Dagster.",
+    "version": "1.0.0",
+    "npm": {
+        "dependencies": {}
+    }
+}

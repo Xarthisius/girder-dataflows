@@ -1,0 +1,56 @@
+.g-body-title Dataflow #[a(href=`#dataflow/${dataflow.id}`)= dataflow.name()]
+
+if dataflow.get('description')
+  .g-dataflow-description-container!= renderMarkdown(dataflow.get('description'))
+
+h4 Dataflow Info
+p.
+label Dataflow Image:
+span
+  = spec.image
+br
+label Topic:
+span
+  = spec.topic
+br
+label Destination:
+span #[a(href=`${dataLink}`)= data]
+
+if dataflow.get('status')
+  h4 Dataflow Status
+  - var status = dataflow.get('status')
+  p.
+  label State:
+  span
+    = status.State
+  br
+  label Message:
+  span
+    = status.Message
+  br
+  label Timestamp:
+  span
+    = status.Timestamp
+
+  if status.Err
+    br
+    label Error:
+    span
+      = status.Err
+
+.g-run-container
+  .g-validation-failed-message
+  button.g-reload-dataflow.btn
+    i.icon-arrows-cw
+    |  Refresh
+  button.g-edit-dataflow.btn.btn-warning
+    i.icon-edit
+    |  Edit
+  if dataflow.get('status')
+    button.g-stop-dataflow.btn.btn-danger
+      i.icon-stop
+      |  Stop
+  else
+    button.g-run-dataflow.btn.btn-success
+      i.icon-play
+      |  Run
