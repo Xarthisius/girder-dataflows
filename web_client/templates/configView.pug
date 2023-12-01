@@ -1,0 +1,30 @@
+.g-config-breadcrumb-container
+
+#g-dataflows-options.panel-group
+  .panel.panel-default
+    .panel-heading
+      .panel-title Dataflows Kafka Configuration
+      .panel-body
+        form#g-dataflows-config-form.g-dataflows-config-form(role="form")
+          .form-group
+            label.control-label(for="g-dataflows-kafka-bootstrap-servers") Kafka Bootstrap Servers
+            input#g-dataflows-kafka-bootstrap-servers.input-sm.form-control(
+                type="text", placeholder="localhost:9092")
+          .form-group
+            label.control-label(for="g-dataflows-kafka-sasl-mechanism") Kafka SASL Mechanism
+            input#g-dataflows-kafka-sasl-mechanism.input-sm.form-control(
+                type="text", placeholder="PLAIN")
+          .form-group
+            label.control-label(for="g-dataflows-kafka-security-protocol") Kafka Security Protocol
+            input#g-dataflows-kafka-security-protocol.input-sm.form-control(
+                type="text", placeholder="SASL_PLAINTEXT")
+          .form-group
+            label.control-label(for="g-dataflows-kafka-sasl-username") Kafka SASL Username
+            input#g-dataflows-kafka-sasl-username.input-sm.form-control(
+                type="text", placeholder="admin")
+          .form-group
+            label.control-label(for="g-dataflows-kafka-sasl-password") Kafka SASL Password
+            input#g-dataflows-kafka-sasl-password.input-sm.form-control(
+                type="text", placeholder="admin-secret")
+          p#g-dataflows-config-error-message.g-validation-failed-message()
+          input.btn.btn-sm.btn-primary(type="submit", value="Save")

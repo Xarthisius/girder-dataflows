@@ -4,7 +4,9 @@ from girder.api.rest import getApiUrl
 from girder.constants import AccessType, SortDir
 from girder.models.api_key import ApiKey
 from girder.models.model_base import AccessControlledModel, ValidationException
+from girder.models.setting import Setting
 
+from ..constants import PluginSettings
 from ..lib.service import DataflowService
 from .spec import Spec
 
@@ -164,10 +166,19 @@ class Dataflow(AccessControlledModel):
             f"{self._getApiKey(user)}"
         )
 
+        env = [
+            f"BROKER_BOOTSTRAP_SERVERS={Setting().get(PluginSettings.KAFKA_BOOTSTRAP_SERVERS)}",
+            f"BROKER_SASL_MECHANISM={Setting().get(PluginSettings.KAFKA_SASL_MECHANISM)}",
+            f"BROKER_SECURITY_PROTOCOL={Setting().get(PluginSettings.KAFKA_SECURITY_PROTOCOL)}",
+            f"BROKER_SASL_USERNAME={Setting().get(PluginSettings.KAFKA_SASL_USERNAME)}",
+            f"BROKER_SASL_PASSWORD={Setting().get(PluginSettings.KAFKA_SASL_PASSWORD)}",
+        ]
+
         service.create(
             image=spec["image"],
             name=f"flow-{dataflow['_id']}",
             command=cmd,
+            env=env,
             workdir="/tmp",
             networks=["host"],
         )

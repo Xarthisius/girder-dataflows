@@ -1,10 +1,18 @@
 import router from 'girder/router';
 import events from 'girder/events';
+import { exposePluginConfig } from 'girder/utilities/PluginUtils';
 
 import DataflowModel from './models/DataflowModel';
+import ConfigView from './views/ConfigView';
 import DataflowListView from './views/DataflowListView';
 import DataflowView from './views/DataflowView';
 import CreateDataflowView from './views/CreateDataflowView';
+
+exposePluginConfig('dataflows', 'plugins/dataflows/config');
+
+router.route('plugins/dataflows/config', 'dataflowsConfig', function () {
+    events.trigger('g:navigateTo', ConfigView);
+});
 
 router.route('dataflows', 'dataflows', function () {
     events.trigger('g:navigateTo', DataflowListView);
