@@ -9,12 +9,17 @@ label Dataflow Image:
 span
   = spec.image
 br
-label Topic:
-span
-  = spec.topic
-br
+if dataflow.get('topic')
+  label Topic:
+  span
+    = spec.topic
+  br
 label Destination:
-span #[a(href=`${dataLink}`)= data]
+span #[a(href=`${dstLink}`)= dstPath]
+if srcLink
+  br
+  label Source:
+  span #[a(href=`${srcLink}`)= srcPath]
 
 if dataflow.get('status')
   h4 Dataflow Status

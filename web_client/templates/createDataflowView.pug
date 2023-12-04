@@ -12,6 +12,16 @@ form#g-item-edit-form.modal-form(role="form")
   .form-group
     label.control-label Description (optional)
     .g-description-editor-container
+  .form-group
+    label.control-label Dataflow Type
+    .radio
+      label
+        input#g-dataflow-type-openmsi(type="radio", name="g-dataflow-type", value="openmsi", checked="checked")
+        | OpenMSI
+    .radio
+      label
+        input#g-dataflow-type-dagster(type="radio", name="g-dataflow-type", value="dagster")
+        | Dagster
   #g-data-group.form-group
     label.control-label Destination Folder
     .input-group.input-group-sm
@@ -20,6 +30,15 @@ form#g-item-edit-form.modal-form(role="form")
         placeholder="Existing folder ID to use as the data destination")
       .input-group-btn
         button.g-open-browser.btn.btn-default(type="button")
+          i.icon-folder-open
+  #g-source-group.form-group
+    label.control-label Source Folder
+    .input-group.input-group-sm
+      input#g-folder-source-id.form-control.input-sm(
+        type="text",
+        placeholder="Existing folder ID to use as the data source")
+      .input-group-btn
+        button.g-open-browser-src.btn.btn-default(type="button")
           i.icon-folder-open
   .form-group
     label.control-label Topic Name
@@ -32,7 +51,7 @@ form#g-item-edit-form.modal-form(role="form")
         | Choose Image
         i.icon-down-dir
       ul.dropdown-menu.pull-right(role="menu")
-        each frontend in ["xarthisius/openmsistream:demo"]
+        each frontend in ["xarthisius/openmsistream:demo", "xarthisius/dagster_example:demo"]
           li(role="presentation")
             a.g-frontend(role="menuitem", frontend-cid=frontend)
               = frontend

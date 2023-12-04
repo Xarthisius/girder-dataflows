@@ -40,18 +40,31 @@ const DataflowView = View.extend({
             }).then((resp) => resp)
         ];
 
+        if (this._dataflowSpec.sourceId) {
+            promises.push(restRequest({
+                url: 'resource/' + this._dataflowSpec.sourceId + '/path',
+                type: 'GET',
+                data: {
+                    type: 'folder'
+                }
+            }).then((resp) => resp));
+            promises.push(restRequest({
+                url: `folder/${this._dataflowSpec.sourceId}`
+            }).then((resp) => resp));
+        }
+
         var view = this;
         // Fetch the plugin list
         $.when(...promises).done(function () {
             view.scripts = [];
             if (arguments.length > 2) {
-                for (var i = 2; i < arguments.length; i++) {
-                    view.scripts.push(arguments[i]);
-                }
+                view.sourcePath = arguments[2];
+                let srcFolder = arguments[3];
+                view.sourceLink = `#${srcFolder.baseParentType}/${srcFolder.baseParentId}/folder/${srcFolder._id}`;
             }
-            view.destinationId = arguments[0];
-            let folder = arguments[1];
-            view.destinationLink = `#${folder.baseParentType}/${folder.baseParentId}/folder/${folder._id}`;
+            view.destinationPath = arguments[0];
+            let dstFolder = arguments[1];
+            view.destinationLink = `#${dstFolder.baseParentType}/${dstFolder.baseParentId}/folder/${dstFolder._id}`;
             view.render();
         }).fail(() => {
             router.navigate('/', { trigger: true });
@@ -61,8 +74,10 @@ const DataflowView = View.extend({
     render: function () {
         this.$el.html(template({
             dataflow: this.model,
-            data: this.destinationId,
-            dataLink: this.destinationLink,
+            dstPath: this.destinationPath,
+            dstLink: this.destinationLink,
+            srcPath: this.sourcePath || null,
+            srcLink: this.sourceLink || null,
             spec: this._dataflowSpec || {},
             renderMarkdown: renderMarkdown
         }));

@@ -89,15 +89,14 @@ class Dataflow(Resource):
     )
     @filtermodel(model="dataflow", plugin="dataflows")
     def executeDataflow(self, dataflow, action):
+        dataflow["spec"] = self._model.currentSpec(dataflow)
         if action == "start":
             # start the dataflow
             self._model.createService(dataflow, self.getCurrentUser())
         elif action == "stop":
             # stop the dataflow
             self._model.removeService(dataflow)
-
         dataflow["status"] = self._model.currentStatus(dataflow)
-        dataflow["spec"] = self._model.currentSpec(dataflow)
         return dataflow
 
     @access.user
@@ -127,7 +126,7 @@ class Dataflow(Resource):
 
     def _validateDataflow(self, spec):
         Folder().load(spec.get("destinationId"), force=True, exc=True)
-        if not spec.get("topic"):
+        if spec["type"] == "openmsi" and not spec.get("topic"):
             raise ValidationException("Dataflow spec must contain a topic.", "spec")
 
         if not spec.get("image"):

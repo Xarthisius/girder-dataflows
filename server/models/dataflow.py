@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 from girder.api.rest import getApiUrl
 from girder.constants import AccessType, SortDir
 from girder.models.api_key import ApiKey
@@ -7,6 +8,7 @@ from girder.models.model_base import AccessControlledModel, ValidationException
 from girder.models.setting import Setting
 
 from ..constants import PluginSettings
+from ..lib.dagster_workspace import DagsterWorkspace
 from ..lib.service import DataflowService
 from .spec import Spec
 
@@ -44,7 +46,9 @@ class Dataflow(AccessControlledModel):
             raise ValidationException("Dataflow document is empty.")
         return doc
 
-    def createDataflow(self, name, description, creator, public=None):
+    def createDataflow(
+        self, name, description, creator, dataflow_type="openmsi", public=None
+    ):
         """
         Create a new dataflow.
         """
@@ -52,7 +56,7 @@ class Dataflow(AccessControlledModel):
             "name": name,
             "description": description,
             "creatorId": creator["_id"],
-            "type": "dataflow",
+            "type": dataflow_type,
             "status": None,
         }
         self.setUserAccess(dataflow, user=creator, level=AccessType.ADMIN, save=False)
@@ -148,6 +152,66 @@ class Dataflow(AccessControlledModel):
         """
         Create a new service for the dataflow.
         """
+        if dataflow["spec"]["type"] == "openmsi":
+            return self.createOpenMSIService(dataflow, user)
+        elif dataflow["spec"]["type"] == "dagster":
+            return self.createDagsterService(dataflow, user)
+
+    def createDagsterService(self, dataflow, user):
+        """
+        Create a new Dagster service for the dataflow.
+        """
+        spec = Spec().findOne(
+            {"dataflowId": dataflow["_id"]}, sort=[("created", SortDir.DESCENDING)]
+        )
+        service = DataflowService()
+
+        spec_id = spec["_id"]
+        spec = spec["spec"]
+
+        env = [
+            f"GIRDER_API_URL={getApiUrl(preferReferer=True)}",
+            f"GIRDER_API_KEY={self._getApiKey(user)}",
+            f"DAGSTER_CURRENT_IMAGE={spec['image']}",
+            f"DATAFLOW_ID={dataflow['_id']}",
+            f"DATAFLOW_SPEC_ID={spec_id}",
+            f"DATAFLOW_SRC_FOLDER_ID={spec['sourceId']}",
+            f"DATAFLOW_DST_FOLDER_ID={spec['destinationId']}",
+        ]
+
+        hosts = {}
+        if os.environ.get("DOMAIN") == "local.wholetale.org":
+            hosts["girder.local.wholetale.org"] = "host-gateway"
+
+        name = f"flow-{dataflow['_id']}"
+        service.create(
+            name=name,
+            image=spec["image"],
+            env=env,
+            networks=["wt_dagster"],
+            hosts=hosts,
+        )
+        self._updateDagsterWorkspace(name, name)
+
+    def _updateDagsterWorkspace(self, location, host, increment=1):
+        """
+        Update the Dagster workspace.
+        """
+        workspace = DagsterWorkspace("/girder/workspace.yaml")
+        if increment > 0:
+            workspace.add_location(location, host)
+        else:
+            workspace.remove_location(location)
+        workspace.save()
+        # This is obnoxious, but we need to restart the dagster services
+        #for service_name in ("wt_dagster_web", "wt_dagster_daemon"):
+        #    service = DataflowService(service_name)
+        #    service.restart()
+
+    def createOpenMSIService(self, dataflow, user):
+        """
+        Create a new OpenMSI service for the dataflow.
+        """
         spec = Spec().findOne(
             {"dataflowId": dataflow["_id"]}, sort=[("created", SortDir.DESCENDING)]
         )
@@ -161,7 +225,7 @@ class Dataflow(AccessControlledModel):
             "--config /app/test.config "
             f"--topic_name {spec['topic']} "
             f"--girder_root_folder_id {spec['destinationId']} "
-            f"--metadata \'{json.dumps(meta)}\' "
+            f"--metadata '{json.dumps(meta)}' "
             f"{getApiUrl(preferReferer=True)} "
             f"{self._getApiKey(user)}"
         )
@@ -189,8 +253,11 @@ class Dataflow(AccessControlledModel):
         """
         Remove the service for the dataflow.
         """
-        service = DataflowService(f"flow-{dataflow['_id']}")
+        name = f"flow-{dataflow['_id']}"
+        service = DataflowService(name)
         service.remove()
+        if dataflow["spec"]["type"] == "dagster":
+            self._updateDagsterWorkspace(name, name, increment=-1)
         # self.update({"_id": dataflow["_id"]}, {"$set": {"status": None}})
         return service
 

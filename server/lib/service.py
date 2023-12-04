@@ -40,6 +40,12 @@ class DataflowService(object):
         """
         return self.service.remove()
 
+    def restart(self):
+        """
+        Restart the service.
+        """
+        return self.service.force_update()
+
 
 if __name__ == '__main__':
     service = DataflowService()

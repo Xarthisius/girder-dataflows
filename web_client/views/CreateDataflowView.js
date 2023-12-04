@@ -17,6 +17,7 @@ import '../stylesheets/createDataflowView.styl';
 import 'girder/utilities/jquery/girderEnable';
 
 var lastParent = null;
+var lastParentSource = null;
 
 var CreateDataflowView = View.extend({
     events: {
@@ -31,7 +32,9 @@ var CreateDataflowView = View.extend({
                 description: this.descriptionEditor.val(),
                 spec: {
                     destinationId: this.$('#g-folder-data-id').attr('objId'),
+                    sourceId: this.$('#g-folder-source-id').attr('objId') || null,
                     image: this.$('button.g-dataflow-frontend-select:first-child').val(),
+                    type: this.$('#g-item-edit-form .radio input:checked').val(),
                     topic: this.$('#g-topic-name').val().trim()
                 }
             };
@@ -48,10 +51,16 @@ var CreateDataflowView = View.extend({
             return false;
         },
         'click .g-open-browser': '_openBrowser',
+        'click .g-open-browser-src': '_openBrowserSrc',
         'click a.g-frontend': function (e) {
             var frontendName = $(e.currentTarget).text();
             $('button.g-dataflow-frontend-select:first-child').text(frontendName);
             $('button.g-dataflow-frontend-select:first-child').val(frontendName);
+        },
+        'click a.g-dataflow-type': function (e) {
+            var frontendName = $(e.currentTarget).text();
+            $('button.g-dataflow-type-select:first-child').text(frontendName);
+            $('button.g-dataflow-type-select:first-child').val(frontendName);
         },
         'click button.g-script-add-button': function (e) {
             e.preventDefault();
@@ -59,7 +68,8 @@ var CreateDataflowView = View.extend({
         },
         'click a.g-cancel-dataflow': function (e) {
             router.navigate('/dataflows', {trigger: true});
-        }
+        },
+        'change #g-item-edit-form .radio input': 'typeChanged'
     },
 
     initialize: function (settings) {
@@ -77,10 +87,21 @@ var CreateDataflowView = View.extend({
             showItems: false,
             selectItem: false,
             root: lastParent || getCurrentUser(),
-            titleText: this.initialValues ? this.initialValues.data : 'Select a folder with data',
+            titleText: this.initialValues ? this.initialValues.data : 'Select a folder for upload',
             helpText: 'Browse to a directory to select it, then click "Save"',
             showPreview: false,
             input: this.initialValues ? {default: this.initialValues.data} : false,
+            validate: _.noop
+        });
+        this.sourceSelector = new BrowserWidget({
+            parentView: this,
+            showItems: false,
+            selectItem: false,
+            root: lastParentSource || getCurrentUser(),
+            titleText: this.initialValues ? this.initialValues.source : 'Select a folder with source',
+            helpText: 'Browse to a directory to select it, then click "Save"',
+            showPreview: false,
+            input: this.initialValues ? {default: this.initialValues.sourceId} : false,
             validate: _.noop
         });
 
@@ -89,7 +110,7 @@ var CreateDataflowView = View.extend({
             if (spec.image) {
                 this.initialValues.image = spec.image;
             }
-            if (spec.topic) {
+            if (spec.topic && spec.type === 'openmsi') {
                 this.initialValues.topic = spec.topic;
             }
             if (spec.destinationId) {
@@ -101,11 +122,29 @@ var CreateDataflowView = View.extend({
                     this.$('#g-folder-data-id').attr('objId', destinationFolder.id);
                 });
             }
+            if (spec.sourceId) {
+                const sourceFolder = new FolderModel({_id: spec.sourceId});
+                sourceFolder.fetch().done(() => {
+                    lastParentSource = sourceFolder.parentId;
+                    this.sourceSelector.root = sourceFolder;
+                    this.$('#g-folder-source-id').val(sourceFolder.get('name'));
+                    this.$('#g-folder-source-id').attr('objId', sourceFolder.id);
+                });
+            }
+            if (spec.type) {
+                this.initialValues.type = spec.type;
+                this.$('#g-item-edit-form .radio input[value="' + spec.type + '"]').prop('checked', true);
+            }
         }
 
         this.listenTo(this.dataSelector, 'g:saved', function (val) {
             this.$('#g-folder-data-id').val(val.attributes.name);
             this.$('#g-folder-data-id').attr('objId', val.id);
+        });
+
+        this.listenTo(this.sourceSelector, 'g:saved', function (val) {
+            this.$('#g-folder-source-id').val(val.attributes.name);
+            this.$('#g-folder-source-id').attr('objId', val.id);
         });
 
         this.render();
@@ -127,6 +166,21 @@ var CreateDataflowView = View.extend({
         }
     },
 
+    typeChanged: function () {
+        const type = this.$('#g-item-edit-form .radio input:checked').val();
+        if (type === 'dagster') {
+            this.$('#g-topic-name').attr('disabled', true);
+            this.$('#g-topic-name').attr('placeholder', 'Dataflow topic is not used for dagster');
+            this.$('#g-folder-source-id').attr('disabled', false);
+            this.$('.g-open-browser-src').attr('disabled', false);
+        } else {
+            this.$('#g-topic-name').attr('disabled', false);
+            this.$('#g-topic-name').attr('placeholder', 'Enter a topic name');
+            this.$('#g-folder-source-id').attr('disabled', true);
+            this.$('.g-open-browser-src').attr('disabled', true);
+        }
+    },
+
     render: function () {
         this.$el.html(CreateDataflowViewTemplate({
             item: this.dataflow,
@@ -142,13 +196,19 @@ var CreateDataflowView = View.extend({
             $('button.g-dataflow-frontend-select:first-child').val(this.initialValues.image);
             this.$('#g-topic-name').val(this.initialValues.topic);
             this.$('#g-folder-data-id').val(this.initialValues.destinationId);
+            this.$('#g-folder-source-id').val(this.initialValues.sourceId);
+            this.$('#g-item-edit-form .radio input[value="' + this.initialValues.type + '"]').prop('checked', true);
         }
-
+        this.typeChanged();
         return this;
     },
 
     _openBrowser: function () {
         this.dataSelector.setElement($('#g-dialog-container')).render();
+    },
+
+    _openBrowserSrc: function () {
+        this.sourceSelector.setElement($('#g-dialog-container')).render();
     },
 
     createDataflow: function (fields) {
@@ -169,7 +229,6 @@ var CreateDataflowView = View.extend({
         if (fields.spec !== this.dataflow.attributes.spec) {
             // If the spec changed, we need to update the spec
             const spec = new SpecModel({dataflowId: this.model.id, data: JSON.stringify(fields.spec)});
-            console.log(spec);
             spec.on('g:saved', function () {
                 console.log('Spec saved');
             }, this).on('g:error', function (err) {
