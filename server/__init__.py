@@ -15,6 +15,9 @@ from .rest.spec import Spec
     PluginSettings.KAFKA_SASL_USERNAME,
     PluginSettings.KAFKA_SASL_PASSWORD,
     PluginSettings.KAFKA_SECURITY_PROTOCOL,
+    PluginSettings.DAGSTER_POSTGRES_USER,
+    PluginSettings.DAGSTER_POSTGRES_PASSWORD,
+    PluginSettings.DAGSTER_POSTGRES_DB,
 })
 def validateOtherSettings(event):
     pass
@@ -27,6 +30,9 @@ def load(info):
         PluginSettings.KAFKA_SASL_USERNAME: "admin",
         PluginSettings.KAFKA_SASL_PASSWORD: "admin-secret",
         PluginSettings.KAFKA_SECURITY_PROTOCOL: "SASL_PLAINTEXT",
+        PluginSettings.DAGSTER_POSTGRES_USER: "postgres_user",
+        PluginSettings.DAGSTER_POSTGRES_PASSWORD: "postgres_password",
+        PluginSettings.DAGSTER_POSTGRES_DB: "postgres_db",
     })
     info["apiRoot"].dataflow = Dataflow()
     info["apiRoot"].spec = Spec()

@@ -177,7 +177,12 @@ class Dataflow(AccessControlledModel):
             f"DATAFLOW_SPEC_ID={spec_id}",
             f"DATAFLOW_SRC_FOLDER_ID={spec['sourceId']}",
             f"DATAFLOW_DST_FOLDER_ID={spec['destinationId']}",
+            f"DAGSTER_POSTGRES_DB={Setting().get(PluginSettings.DAGSTER_POSTGRES_DB)}",
+            f"DAGSTER_POSTGRES_USER={Setting().get(PluginSettings.DAGSTER_POSTGRES_USER)}",
+            f"DAGSTER_POSTGRES_PASSWORD={Setting().get(PluginSettings.DAGSTER_POSTGRES_PASSWORD)}",
         ]
+        extra = f"DAGSTER_CLI_API_GRPC_CONTAINER_CONTEXT={json.dumps({'docker':{'env_vars':env}})}"
+        env.append(extra)
 
         hosts = {}
         if os.environ.get("DOMAIN") == "local.wholetale.org":
@@ -204,7 +209,7 @@ class Dataflow(AccessControlledModel):
             workspace.remove_location(location)
         workspace.save()
         # This is obnoxious, but we need to restart the dagster services
-        #for service_name in ("wt_dagster_web", "wt_dagster_daemon"):
+        # for service_name in ("wt_dagster_web", "wt_dagster_daemon"):
         #    service = DataflowService(service_name)
         #    service.restart()
 

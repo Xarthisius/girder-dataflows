@@ -48,7 +48,10 @@ var ConfigView = View.extend({
         'dataflows.kafka_sasl_mechanism',
         'dataflows.kafka_sasl_username',
         'dataflows.kafka_sasl_password',
-        'dataflows.kafka_security_protocol'
+        'dataflows.kafka_security_protocol',
+        'dataflows.dagster_postgres_db',
+        'dataflows.dagster_postgres_user',
+        'dataflows.dagster_postgres_password'
     ],
 
     settingControlId: function (key) {

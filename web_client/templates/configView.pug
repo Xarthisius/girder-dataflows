@@ -26,5 +26,17 @@
             label.control-label(for="g-dataflows-kafka-sasl-password") Kafka SASL Password
             input#g-dataflows-kafka-sasl-password.input-sm.form-control(
                 type="text", placeholder="admin-secret")
+          .form-group
+            label.control-label(for="g-dataflows-dagster-postgres-db") Dagster Postgres DB
+            input#g-dataflows-dagster-postgres-db.input-sm.form-control(
+                type="text", placeholder="postgres_db")
+          .form-group
+            label.control-label(for="g-dataflows-dagster-postgres-user") Dagster Postgres User
+            input#g-dataflows-dagster-postgres-user.input-sm.form-control(
+                type="text", placeholder="postgres_user")
+          .form-group
+            label.control-label(for="g-dataflows-dagster-postgres-password") Dagster Postgres Password
+            input#g-dataflows-dagster-postgres-password.input-sm.form-control(
+                type="text", placeholder="postgres_password")
           p#g-dataflows-config-error-message.g-validation-failed-message()
           input.btn.btn-sm.btn-primary(type="submit", value="Save")
