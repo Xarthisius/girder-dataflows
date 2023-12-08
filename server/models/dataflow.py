@@ -171,7 +171,7 @@ class Dataflow(AccessControlledModel):
 
         env = [
             f"GIRDER_API_URL={getApiUrl(preferReferer=True)}",
-            f"GIRDER_API_KEY={self._getApiKey(user)}",
+            f"GIRDER_TOKEN={self._getApiKey(user, token=True)}",
             f"DAGSTER_CURRENT_IMAGE={spec['image']}",
             f"DATAFLOW_ID={dataflow['_id']}",
             f"DATAFLOW_SPEC_ID={spec_id}",
@@ -181,7 +181,15 @@ class Dataflow(AccessControlledModel):
             f"DAGSTER_POSTGRES_USER={Setting().get(PluginSettings.DAGSTER_POSTGRES_USER)}",
             f"DAGSTER_POSTGRES_PASSWORD={Setting().get(PluginSettings.DAGSTER_POSTGRES_PASSWORD)}",
         ]
-        extra = f"DAGSTER_CLI_API_GRPC_CONTAINER_CONTEXT={json.dumps({'docker':{'env_vars':env}})}"
+        container_context = {
+            "docker": {
+                "env_vars": env,
+                "container_kwargs": {
+                    "extra_hosts": {"girder.local.wholetale.org": "host-gateway"}
+                },
+            }
+        }
+        extra = f"DAGSTER_CLI_API_GRPC_CONTAINER_CONTEXT={json.dumps(container_context)}"
         env.append(extra)
 
         hosts = {}
@@ -275,11 +283,14 @@ class Dataflow(AccessControlledModel):
             return task["Status"]
 
     @staticmethod
-    def _getApiKey(user):
+    def _getApiKey(user, token=False):
         """
         Get the API key for the user.
         """
         apikey = ApiKey().findOne({"userId": user["_id"], "name": "Dataflows"})
         if not apikey:
             apikey = ApiKey().createApiKey(user, name="Dataflows")
+        if token:
+            _, girder_token = ApiKey().createToken(apikey["key"])
+            return girder_token["_id"]
         return apikey["key"]
