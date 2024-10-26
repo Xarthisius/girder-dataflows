@@ -51,7 +51,7 @@ form#g-item-edit-form.modal-form(role="form")
         | Choose Image
         i.icon-down-dir
       ul.dropdown-menu.pull-right(role="menu")
-        each frontend in ["xarthisius/openmsistream:demo", "xarthisius/dagster_example:demo", "xarthisius/dagster_example:latest"]
+        each frontend in images
           li(role="presentation")
             a.g-frontend(role="menuitem", frontend-cid=frontend)
               = frontend

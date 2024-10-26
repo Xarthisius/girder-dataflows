@@ -4,7 +4,9 @@ from girder.api.rest import filtermodel, Resource
 from girder.constants import AccessType
 from girder.exceptions import ValidationException
 from girder.models.folder import Folder
+from girder.models.setting import Setting
 
+from ..constants import PluginSettings
 from ..models.spec import Spec
 from ..models.dataflow import Dataflow as DataflowModel
 
@@ -21,6 +23,7 @@ class Dataflow(Resource):
         self.route("PUT", (":id",), self.updateDataflow)
         self.route("PUT", (":id", "execute"), self.executeDataflow)
         self.route("POST", (), self.createDataflow)
+        self.route("GET", ("images",), self.dataflowImages)
 
     @access.public
     @autoDescribeRoute(
@@ -132,3 +135,8 @@ class Dataflow(Resource):
         if not spec.get("image"):
             raise ValidationException("Dataflow spec must contain an image.", "spec")
         return spec
+
+    @access.public
+    @autoDescribeRoute(Description("Get available Dataflow images."))
+    def dataflowImages(self):
+        return Setting().get(PluginSettings.DOCKER_IMAGES, [])

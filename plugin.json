@@ -3,6 +3,8 @@
     "description": "Plugin adding support for OpenMSIStream and Dagster.",
     "version": "1.0.0",
     "npm": {
-        "dependencies": {}
+        "dependencies": {
+            "bootstrap-tagsinput": "^0.7.1"
+        }
     }
 }

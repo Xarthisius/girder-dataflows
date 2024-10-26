@@ -1,8 +1,6 @@
 // Extends and overrides API
 import { wrap } from 'girder/utilities/PluginUtils';
 import GlobalNavView from 'girder/views/layout/GlobalNavView';
-import FileListWidget from 'girder/views/widgets/FileListWidget';
-import { SORT_DESC } from 'girder/constants';
 
 import './routes';
 

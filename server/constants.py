@@ -11,3 +11,4 @@ class PluginSettings:
     DAGSTER_POSTGRES_USER = "dataflows.dagster_postgres_user"
     DAGSTER_POSTGRES_PASSWORD = "dataflows.dagster_postgres_password"
     DAGSTER_POSTGRES_DB = "dataflows.dagster_postgres_db"
+    DOCKER_IMAGES = "dataflows.docker_images"
