@@ -1,3 +1,4 @@
+
 {
     "name": "girder-dataflows",
     "version": "1.0.0",
@@ -10,6 +11,7 @@
     "license": "BSD-3",
     "npm": {
         "dependencies": {
+            "bootstrap-tagsinput": "^0.7.1"
         }
     }
 }

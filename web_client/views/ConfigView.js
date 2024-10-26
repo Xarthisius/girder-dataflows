@@ -8,6 +8,9 @@ import events from 'girder/events';
 import ConfigViewTemplate from '../templates/configView.pug';
 import '../stylesheets/configView.styl';
 
+import 'bootstrap-tagsinput';
+import 'bootstrap-tagsinput/dist/bootstrap-tagsinput.css';
+
 var ConfigView = View.extend({
     events: {
         'submit .g-dataflows-config-form': function (event) {
@@ -20,6 +23,10 @@ var ConfigView = View.extend({
                 } else {
                     value = null;
                 }
+                if (key === 'dataflows.docker_images') {
+                    value = this.$('input#g-dataflows-docker-images').tagsinput('items');
+                }
+
                 return {
                     key: key,
                     value: value
@@ -33,7 +40,7 @@ var ConfigView = View.extend({
     initialize: function () {
         restRequest({
             type: 'GET',
-            path: 'system/setting',
+            url: 'system/setting',
             data: {
                 list: JSON.stringify(this.SETTING_KEYS)
             }
@@ -51,7 +58,8 @@ var ConfigView = View.extend({
         'dataflows.kafka_security_protocol',
         'dataflows.dagster_postgres_db',
         'dataflows.dagster_postgres_user',
-        'dataflows.dagster_postgres_password'
+        'dataflows.dagster_postgres_password',
+        'dataflows.docker_images'
     ],
 
     settingControlId: function (key) {
@@ -79,10 +87,19 @@ var ConfigView = View.extend({
             }).render();
         }
 
+        this.$('#g-dataflows-docker-images').tagsinput();
+
         if (this.settingVals) {
             for (var i in this.SETTING_KEYS) {
                 var key = this.SETTING_KEYS[i];
-                this.$(this.settingControlId(key)).val(this.settingVals[key]);
+                if (key === 'dataflows.docker_images') {
+                    const images = this.settingVals[key] || [];
+                    images.forEach((image) => {
+                        this.$('input#g-dataflows-docker-images').tagsinput('add', image);
+                    });
+                } else {
+                    this.$(this.settingControlId(key)).val(this.settingVals[key]);
+                }
             }
         }
 
@@ -92,11 +109,10 @@ var ConfigView = View.extend({
     _saveSettings: function (settings) {
         restRequest({
             type: 'PUT',
-            path: 'system/setting',
+            url: 'system/setting',
             data: {
                 list: JSON.stringify(settings)
-            },
-            error: null
+            }
         }).done(_.bind(function () {
             events.trigger('g:alert', {
                 icon: 'ok',
@@ -104,7 +120,7 @@ var ConfigView = View.extend({
                 type: 'success',
                 timeout: 3000
             });
-        }, this)).error(_.bind(function (resp) {
+        }, this)).fail(_.bind(function (resp) {
             this.$('#g-dataflows-config-error-message').text(resp.responseJSON.message);
         }, this));
     }

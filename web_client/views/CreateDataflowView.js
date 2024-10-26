@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import _ from 'underscore';
 
+import { restRequest } from 'girder/rest';
 import router from 'girder/router';
 import FolderModel from 'girder/models/FolderModel';
 import MarkdownWidget from 'girder/views/widgets/MarkdownWidget';
@@ -147,7 +148,12 @@ var CreateDataflowView = View.extend({
             this.$('#g-folder-source-id').attr('objId', val.id);
         });
 
-        this.render();
+        restRequest({
+            url: 'dataflow/images'
+        }).done((resp) => {
+            this.images = resp;
+            this.render();
+        });
     },
 
     addNewScript: function (event) {
@@ -184,6 +190,7 @@ var CreateDataflowView = View.extend({
     render: function () {
         this.$el.html(CreateDataflowViewTemplate({
             item: this.dataflow,
+            images: this.images,
             frontends: []
         }));
         this.descriptionEditor.setElement(this.$('.g-description-editor-container')).render();

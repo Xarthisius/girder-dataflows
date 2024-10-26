@@ -38,5 +38,10 @@
             label.control-label(for="g-dataflows-dagster-postgres-password") Dagster Postgres Password
             input#g-dataflows-dagster-postgres-password.input-sm.form-control(
                 type="text", placeholder="postgres_password")
+          .form-group
+            label.control-label(for="g-dataflows-docker-images") Docker Images
+            input#g-dataflows-docker-images.form-control(
+                type="text", name="dockerImages", data-role="tagsinput")
+
           p#g-dataflows-config-error-message.g-validation-failed-message()
           input.btn.btn-sm.btn-primary(type="submit", value="Save")

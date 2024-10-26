@@ -171,6 +171,7 @@ class Dataflow(AccessControlledModel):
 
         env = [
             f"GIRDER_API_URL={getApiUrl(preferReferer=True)}",
+            f"GIRDER_API_KEY={self._getApiKey(user, token=False)}",
             f"GIRDER_TOKEN={self._getApiKey(user, token=True)}",
             f"DAGSTER_CURRENT_IMAGE={spec['image']}",
             f"DATAFLOW_ID={dataflow['_id']}",
@@ -185,7 +186,7 @@ class Dataflow(AccessControlledModel):
             "docker": {
                 "env_vars": env,
                 "container_kwargs": {
-                    "extra_hosts": {"girder.local.wholetale.org": "host-gateway"}
+                    "extra_hosts": {"girder.local.xarthisius.xyz": "host-gateway"}
                 },
             }
         }
@@ -193,8 +194,8 @@ class Dataflow(AccessControlledModel):
         env.append(extra)
 
         hosts = {}
-        if os.environ.get("DOMAIN") == "local.wholetale.org":
-            hosts["girder.local.wholetale.org"] = "host-gateway"
+        if os.environ.get("DOMAIN") == "local.xarthisius.xyz":
+            hosts["girder.local.xarthisius.xyz"] = "host-gateway"
 
         name = f"flow-{dataflow['_id']}"
         service.create(

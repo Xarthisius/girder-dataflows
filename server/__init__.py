@@ -20,6 +20,7 @@ from .rest.spec import Spec
         PluginSettings.DAGSTER_POSTGRES_USER,
         PluginSettings.DAGSTER_POSTGRES_PASSWORD,
         PluginSettings.DAGSTER_POSTGRES_DB,
+        PluginSettings.DOCKER_IMAGES,
     }
 )
 def validateOtherSettings(event):
@@ -37,6 +38,11 @@ def load(info):
             PluginSettings.DAGSTER_POSTGRES_USER: "postgres_user",
             PluginSettings.DAGSTER_POSTGRES_PASSWORD: "postgres_password",
             PluginSettings.DAGSTER_POSTGRES_DB: "postgres_db",
+            PluginSettings.DOCKER_IMAGES: [
+                "xarthisius/openmsistream:demo",
+                "xarthisius/dagster_example:demo",
+                "xarthisius/dagster_example:latest",
+            ],
         }
     )
     info["apiRoot"].dataflow = Dataflow()
