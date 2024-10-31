@@ -150,5 +150,9 @@ class Dataflow(Resource):
         .errorResponse("Admin access was denied for the Dataflow.", 403)
     )
     def deleteDataflow(self, dataflow):
+        if self._model.currentStatus(dataflow):
+            raise ValidationException(
+                "Dataflow must be stopped before it can be deleted.", "id"
+            )
         Spec().removeWithQuery({"dataflowId": dataflow["_id"]})
         self._model.remove(dataflow)
