@@ -44,7 +44,6 @@ if dataflow.get('status')
       = status.Err
 
 .g-run-container
-  .g-validation-failed-message
   button.g-reload-dataflow.btn
     i.icon-arrows-cw
     |  Refresh
@@ -59,3 +58,8 @@ if dataflow.get('status')
     button.g-run-dataflow.btn.btn-success
       i.icon-play
       |  Run
+  button.g-delete-dataflow.btn.btn-danger
+    i.icon-trash
+    |  Delete
+
+.g-validation-failed-message
