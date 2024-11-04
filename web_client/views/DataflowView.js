@@ -22,6 +22,13 @@ const DataflowView = View.extend({
                 params: this._dataflowSpec,
                 trigger: true
             });
+        },
+        'click .g-delete-dataflow': function (event) {
+            this.model.destroy().done(() => {
+                router.navigate('dataflows', { trigger: true });
+            }).fail((err) => {
+                this.$('.g-validation-failed-message').text(err.responseJSON.message);
+            });
         }
     },
 

@@ -1,6 +1,6 @@
 from girder.api import access
-from girder.api.describe import autoDescribeRoute, Description
-from girder.api.rest import filtermodel, Resource
+from girder.api.describe import Description, autoDescribeRoute
+from girder.api.rest import Resource, filtermodel
 from girder.constants import AccessType
 
 from ..models.dataflow import Dataflow
@@ -17,6 +17,7 @@ class Spec(Resource):
         self.route("GET", (), self.listSpecs)
         self.route("GET", (":id",), self.getSpec)
         self.route("POST", (), self.createSpec)
+        self.route("DELETE", (":id",), self.deleteSpec)
 
     @access.public
     @autoDescribeRoute(
@@ -60,3 +61,13 @@ class Spec(Resource):
     @filtermodel(model="spec", plugin="dataflows")
     def createSpec(self, dataflow, data):
         return self._model.createSpec(dataflow, data, self.getCurrentUser())
+
+    @access.user
+    @autoDescribeRoute(
+        Description("Delete a Spec by ID")
+        .modelParam("id", model=SpecModel, level=AccessType.WRITE)
+        .errorResponse()
+        .errorResponse("Write access was denied on the Spec.", 403)
+    )
+    def deleteSpec(self, spec):
+        self._model.remove(spec)

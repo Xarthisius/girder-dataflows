@@ -1,14 +1,14 @@
 from girder.api import access
-from girder.api.describe import autoDescribeRoute, Description
-from girder.api.rest import filtermodel, Resource
+from girder.api.describe import Description, autoDescribeRoute
+from girder.api.rest import Resource, filtermodel
 from girder.constants import AccessType
 from girder.exceptions import ValidationException
 from girder.models.folder import Folder
 from girder.models.setting import Setting
 
 from ..constants import PluginSettings
-from ..models.spec import Spec
 from ..models.dataflow import Dataflow as DataflowModel
+from ..models.spec import Spec
 
 
 class Dataflow(Resource):
@@ -22,6 +22,7 @@ class Dataflow(Resource):
         self.route("GET", (":id",), self.getDataflow)
         self.route("PUT", (":id",), self.updateDataflow)
         self.route("PUT", (":id", "execute"), self.executeDataflow)
+        self.route("DELETE", (":id",), self.deleteDataflow)
         self.route("POST", (), self.createDataflow)
         self.route("GET", ("images",), self.dataflowImages)
 
@@ -140,3 +141,18 @@ class Dataflow(Resource):
     @autoDescribeRoute(Description("Get available Dataflow images."))
     def dataflowImages(self):
         return Setting().get(PluginSettings.DOCKER_IMAGES, [])
+
+    @access.user
+    @autoDescribeRoute(
+        Description("Delete a Dataflow.")
+        .modelParam("id", model=DataflowModel, level=AccessType.WRITE)
+        .errorResponse("ID was invalid.")
+        .errorResponse("Admin access was denied for the Dataflow.", 403)
+    )
+    def deleteDataflow(self, dataflow):
+        if self._model.currentStatus(dataflow):
+            raise ValidationException(
+                "Dataflow must be stopped before it can be deleted.", "id"
+            )
+        Spec().removeWithQuery({"dataflowId": dataflow["_id"]})
+        self._model.remove(dataflow)
