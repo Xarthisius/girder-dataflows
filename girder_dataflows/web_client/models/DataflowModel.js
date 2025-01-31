@@ -1,7 +1,7 @@
-import Model from 'girder/models/Model';
-import { restRequest } from 'girder/rest';
-
 import SpecCollection from '../collections/SpecCollection';
+
+const Model = girder.models.Model;
+const { restRequest } = girder.rest;
 
 var DataflowModel = Model.extend({
     resourceName: 'dataflow',

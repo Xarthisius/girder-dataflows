@@ -140,7 +140,7 @@ class Dataflow(Resource):
     @access.public
     @autoDescribeRoute(Description("Get available Dataflow images."))
     def dataflowImages(self):
-        return Setting().get(PluginSettings.DOCKER_IMAGES, [])
+        return Setting().get(PluginSettings.DOCKER_IMAGES) or []
 
     @access.user
     @autoDescribeRoute(
