@@ -25,6 +25,7 @@ setup(
     python_requires=">=3.10",
     setup_requires=["setuptools-git"],
     install_requires=[
+        "docker",
         "girder>=5.0.0a5.dev0",
     ],
     entry_points={"girder.plugin": ["dataflows = girder_dataflows:DataflowsPlugin"]},
