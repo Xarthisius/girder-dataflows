@@ -1,15 +1,16 @@
+import $ from 'jquery';
 import _ from 'underscore';
-
-import PluginConfigBreadcrumbWidget from 'girder/views/widgets/PluginConfigBreadcrumbWidget';
-import View from 'girder/views/View';
-import { apiRoot, restRequest } from 'girder/rest';
-import events from 'girder/events';
 
 import ConfigViewTemplate from '../templates/configView.pug';
 import '../stylesheets/configView.styl';
 
 import 'bootstrap-tagsinput';
 import 'bootstrap-tagsinput/dist/bootstrap-tagsinput.css';
+
+const PluginConfigBreadcrumbWidget = girder.views.widgets.PluginConfigBreadcrumbWidget;
+const View = girder.views.View;
+const { getApiRoot, restRequest } = girder.rest;
+const events = girder.events;
 
 var ConfigView = View.extend({
     events: {
@@ -24,7 +25,7 @@ var ConfigView = View.extend({
                     value = null;
                 }
                 if (key === 'dataflows.docker_images') {
-                    value = this.$('input#g-dataflows-docker-images').tagsinput('items');
+                    value = $('input#g-dataflows-docker-images').tagsinput('items');
                 }
 
                 return {
@@ -68,15 +69,9 @@ var ConfigView = View.extend({
 
     render: function () {
         var origin = window.location.protocol + '//' + window.location.host;
-        var _apiRoot = apiRoot;
-
-        if (apiRoot.substring(0, 1) !== '/') {
-            _apiRoot = '/' + apiRoot;
-        }
-
         this.$el.html(ConfigViewTemplate({
             origin: origin,
-            apiRoot: _apiRoot
+            apiRoot: getApiRoot()
         }));
 
         if (!this.breadcrumb) {
@@ -87,7 +82,7 @@ var ConfigView = View.extend({
             }).render();
         }
 
-        this.$('#g-dataflows-docker-images').tagsinput();
+        $('#g-dataflows-docker-images').tagsinput();
 
         if (this.settingVals) {
             for (var i in this.SETTING_KEYS) {
@@ -95,7 +90,7 @@ var ConfigView = View.extend({
                 if (key === 'dataflows.docker_images') {
                     const images = this.settingVals[key] || [];
                     images.forEach((image) => {
-                        this.$('input#g-dataflows-docker-images').tagsinput('add', image);
+                        $('input#g-dataflows-docker-images').tagsinput('add', image);
                     });
                 } else {
                     this.$(this.settingControlId(key)).val(this.settingVals[key]);

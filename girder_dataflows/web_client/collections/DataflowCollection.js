@@ -1,6 +1,6 @@
-import Collection from 'girder/collections/Collection';
-
 import DataflowModel from '../models/DataflowModel';
+
+const Collection = girder.collections.Collection;
 
 var DataflowCollection = Collection.extend({
     resourceName: 'dataflow',

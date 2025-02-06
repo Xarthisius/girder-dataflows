@@ -1,10 +1,11 @@
-import View from 'girder/views/View';
-import PaginateWidget from 'girder/views/widgets/PaginateWidget';
-import router from 'girder/router';
-
+import $ from 'jquery';
 import DataflowCollection from '../collections/DataflowCollection';
 import template from '../templates/paginateDataflowsWidget.pug';
 import '../stylesheets/paginateDataflowsWidget.styl';
+
+const View = girder.views.View;
+const PaginateWidget = girder.views.widgets.PaginateWidget;
+const router = girder.router;
 
 var PaginateDataflowsWidget = View.extend({
     events: {

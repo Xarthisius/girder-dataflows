@@ -1,21 +1,22 @@
 import $ from 'jquery';
 import _ from 'underscore';
 
-import { restRequest } from 'girder/rest';
-import router from 'girder/router';
-import FolderModel from 'girder/models/FolderModel';
-import MarkdownWidget from 'girder/views/widgets/MarkdownWidget';
-import BrowserWidget from 'girder/views/widgets/BrowserWidget';
-import View from 'girder/views/View';
-import { getCurrentUser } from 'girder/auth';
-
 import DataflowModel from '../models/DataflowModel';
 import SpecModel from '../models/SpecModel';
 import CreateDataflowViewTemplate from '../templates/createDataflowView.pug';
 // import ScriptAddWidget from '../widgets/ScriptAddWidget';
 import '../stylesheets/createDataflowView.styl';
 
-import 'girder/utilities/jquery/girderEnable';
+import '@girder/core/utilities/jquery/girderEnable';
+import 'bootstrap/js/dropdown';
+
+const { restRequest } = girder.rest;
+const router = girder.router;
+const FolderModel = girder.models.FolderModel;
+const MarkdownWidget = girder.views.widgets.MarkdownWidget;
+const BrowserWidget = girder.views.widgets.BrowserWidget;
+const View = girder.views.View;
+const { getCurrentUser } = girder.auth;
 
 var lastParent = null;
 var lastParentSource = null;

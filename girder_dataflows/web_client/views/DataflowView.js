@@ -1,10 +1,11 @@
-import View from 'girder/views/View';
-import { renderMarkdown } from 'girder/misc';
-import { restRequest } from 'girder/rest';
-import router from 'girder/router';
-
+import $ from 'jquery';
 import template from '../templates/dataflowView.pug';
 import '../stylesheets/dataflowView.styl';
+
+const View = girder.views.View;
+const { renderMarkdown } = girder.misc;
+const { restRequest } = girder.rest;
+const router = girder.router;
 
 const DataflowView = View.extend({
     events: {

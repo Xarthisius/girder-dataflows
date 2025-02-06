@@ -1,6 +1,6 @@
-import Collection from 'girder/collections/Collection';
-
 import SpecModel from '../models/SpecModel';
+
+const Collection = girder.collections.Collection;
 
 var SpecCollection = Collection.extend({
     resourceName: 'spec',

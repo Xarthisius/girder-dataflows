@@ -1,12 +1,14 @@
-import router from 'girder/router';
-import events from 'girder/events';
-import { exposePluginConfig } from 'girder/utilities/PluginUtils';
+import $ from 'jquery';
 
 import DataflowModel from './models/DataflowModel';
 import ConfigView from './views/ConfigView';
 import DataflowListView from './views/DataflowListView';
 import DataflowView from './views/DataflowView';
 import CreateDataflowView from './views/CreateDataflowView';
+
+const router = girder.router;
+const events = girder.events;
+const { exposePluginConfig } = girder.utilities.PluginUtils;
 
 exposePluginConfig('dataflows', 'plugins/dataflows/config');
 

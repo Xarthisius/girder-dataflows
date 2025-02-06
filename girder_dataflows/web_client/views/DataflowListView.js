@@ -1,4 +1,4 @@
-import View from 'girder/views/View';
+const View = girder.views.View;
 
 import PaginateDataflowsWidget from './PaginateDataflowsWidget';
 

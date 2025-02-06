@@ -1,3 +1,3 @@
 ### Girder Dataflows
 
-Adds support for OpenMSI and Dagster to Girder
+Adds support for containaeized OpenMSI and Dagster workflows to Girder
