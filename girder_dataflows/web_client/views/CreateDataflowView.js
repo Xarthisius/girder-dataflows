@@ -8,7 +8,6 @@ import CreateDataflowViewTemplate from '../templates/createDataflowView.pug';
 import '../stylesheets/createDataflowView.styl';
 
 import '@girder/core/utilities/jquery/girderEnable';
-import 'bootstrap/js/dropdown';
 
 const { restRequest } = girder.rest;
 const router = girder.router;
