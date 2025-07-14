@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import os
+from pathlib import Path
 from girder.plugin import GirderPlugin, registerPluginStaticContent
 from girder.utility.model_importer import ModelImporter
 from girder.constants import AccessType
@@ -64,6 +63,6 @@ class DataflowsPlugin(GirderPlugin):
             plugin="dataflows",
             css=["/style.css"],
             js=["/girder-plugin-dataflows.umd.cjs"],
-            staticDir=os.path.join(os.path.dirname(__file__), "web_client", "dist"),
+            staticDir=Path(__file__).parent / "web_client" / "dist",
             tree=info["serverRoot"],
         )
